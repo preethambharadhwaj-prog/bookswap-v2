@@ -1,0 +1,53 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<div class="card">
+  {% if listing.has_photo %}<img class="hero" src="{% url 'listing_image' listing.pk %}" alt="">{% endif %}
+  <h2 style="margin-top:0">{{ listing.title }}</h2>
+  <p><small>{{ listing.get_offer_display }} · {{ listing.get_level_display }} · {{ listing.get_department_display }} · Year {{ listing.year }}, Sem {{ listing.semester }}</small></p>
+  <p><small>{{ listing.get_kind_display }} · {{ listing.course_code }} · Ed. {{ listing.edition|default:"–" }} · {{ listing.get_condition_display }}</small></p>
+  {% if listing.pickup %}<p>📍 Pickup: {{ listing.pickup }}</p>{% endif %}
+  {% if listing.description %}<p>{{ listing.description }}</p>{% endif %}
+  <p>Owner: <a href="{% url 'profile' listing.owner.username %}">{{ listing.owner.username }}</a>
+    {% if listing.owner.profile.avg_rating %}★ {{ listing.owner.profile.avg_rating|floatformat:1 }}{% endif %}</p>
+
+  <div class="row">
+    {% for r in listing.reacts %}
+    <form method="post" action="{% url 'react' listing.pk r.key %}">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button class="pill {% if r.mine %}on{% endif %}" {% if not user.is_authenticated %}disabled title="Log in to react"{% endif %}>{{ r.char }} {{ r.n }}</button>
+    </form>
+    {% endfor %}
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'listing_save' listing.pk %}">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button class="ghost">{% if listing.is_saved %}★ Saved{% else %}☆ Save{% endif %}</button>
+    </form>
+    {% endif %}
+    <a href="https://wa.me/?text={{ listing.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener">Share on WhatsApp</a>
+    {% if user.is_authenticated and listing.owner != user %}{% if reported %}<small>You reported this</small>{% else %}
+    <form method="post" action="{% url 'report' listing.pk %}" onsubmit="return confirm('Report this listing?')">{% csrf_token %}<button class="ghost">⚑ Report</button></form>{% endif %}{% endif %}
+    {% if listing.owner == user %}<a href="{% url 'listing_edit' listing.pk %}">Edit this listing</a>{% endif %}
+  </div>
+</div>
+
+{% if form and listing.owner != user and listing.is_available %}
+  <h3>{% if listing.offer == 'donate' %}Claim this{% else %}Send a request{% endif %}</h3>
+  <form method="post" action="{% url 'request_create' listing.pk %}">{% csrf_token %}{{ form.as_p }}<button>Send</button></form>
+{% elif not user.is_authenticated %}
+  <p><a href="{% url 'login' %}">Log in</a> to request or react.</p>
+{% elif not listing.is_available %}
+  <p><small>This item is not available right now.</small></p>
+{% endif %}
+
+<h3>Questions &amp; comments</h3>
+{% for c in comments %}
+  <div class="card"><b>{{ c.author.username }}</b> <small>{{ c.created|timesince }} ago</small>
+    <p style="margin:.3rem 0">{{ c.text|linebreaksbr }}</p>
+    {% if c.author == user or listing.owner == user %}
+    <form method="post" action="{% url 'comment_delete' c.pk %}">{% csrf_token %}<button class="ghost">Delete</button></form>{% endif %}
+  </div>
+{% empty %}<p class="muted">No comments yet.</p>{% endfor %}
+{% if user.is_authenticated %}
+  <form method="post" action="{% url 'comment_create' listing.pk %}">{% csrf_token %}{{ comment_form.as_p }}<button>Post</button></form>
+{% endif %}
+{% endblock %}

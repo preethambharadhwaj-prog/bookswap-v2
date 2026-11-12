@@ -1,0 +1,7 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<h2>Saved</h2>
+<div class="grid">
+{% for l in listings %}{% include "bookswap/_card.html" %}{% empty %}<p>Nothing saved yet. Open a listing and tap ☆ Save.</p>{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<h2>Notifications</h2>
+{% for n in items %}
+  <div class="card">{% if not n.is_read %}<span class="badge">new</span> {% endif %}
+    {% if n.url %}<a href="{{ n.url }}">{{ n.text }}</a>{% else %}{{ n.text }}{% endif %}
+    <div class="muted">{{ n.created|timesince }} ago</div></div>
+{% empty %}<p class="muted">Nothing yet. You'll be notified about requests, comments, ratings and new listings for books you asked for.</p>{% endfor %}
+{% endblock %}

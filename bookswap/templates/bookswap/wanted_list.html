@@ -1,0 +1,27 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<h2>Wanted</h2>
+<p class="muted">Can't find a book? Post it here. Seniors and alumni can offer it, and you're notified when a matching listing appears.</p>
+<form method="get"><input name="q" placeholder="Search title or course code" value="{{ q }}"><button>Search</button></form>
+<p><a href="{% url 'wanted_create' %}"><b>+ I need a book or notes</b></a></p>
+{% for w in items %}
+  <div class="card"><b>{{ w.title }}</b>
+    <div class="tags">
+      {% if w.course_code %}<span class="tag">{{ w.course_code }}</span>{% endif %}
+      {% if w.level %}<span class="tag">{{ w.get_level_display }}</span>{% endif %}
+      {% if w.department %}<span class="tag">{{ w.get_department_display }}</span>{% endif %}
+      {% if w.year %}<span class="tag">Year {{ w.year }}</span>{% endif %}
+    </div>
+    {% if w.note %}<p style="margin:.3rem 0">{{ w.note }}</p>{% endif %}
+    <div class="muted">asked by <a href="{% url 'profile' w.user.username %}">{{ w.user.username }}</a> · {{ w.created|timesince }} ago</div>
+    <div class="row">
+      {% if w.course_code %}<a href="{% url 'listing_list' %}?course_code={{ w.course_code|urlencode }}">Browse matches</a>{% endif %}
+      {% if user.is_authenticated and w.user != user %}
+        <form method="post" action="{% url 'wanted_offer' w.pk %}">{% csrf_token %}<button>I have this</button></form>
+      {% elif w.user == user %}
+        <form method="post" action="{% url 'wanted_close' w.pk %}">{% csrf_token %}<button class="ghost">Mark fulfilled</button></form>
+      {% endif %}
+    </div>
+  </div>
+{% empty %}<p class="muted">No open requests.</p>{% endfor %}
+{% endblock %}

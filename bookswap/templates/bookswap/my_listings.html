@@ -1,0 +1,8 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<h2>My items</h2>
+<p><a href="{% url 'listing_create' %}">+ List something new</a></p>
+<div class="grid">
+{% for l in listings %}{% include "bookswap/_card.html" with manage=True %}{% empty %}<p>You haven't listed anything yet.</p>{% endfor %}
+</div>
+{% endblock %}

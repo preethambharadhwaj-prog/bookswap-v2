@@ -1,0 +1,36 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<p><a href="{% url 'listing_create' %}"><b>Passing out or moving up? Donate your books &amp; notes →</b></a></p>
+<form method="get">
+  <input name="q" placeholder="Search" value="{{ g.q }}">
+  <select name="level"><option value="">Any level</option>
+    {% for v, l in levels %}<option value="{{ v }}" {% if g.level == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="department"><option value="">Any department</option>
+    {% for v, l in departments %}<option value="{{ v }}" {% if g.department == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="year"><option value="">Any year</option>
+    {% for v, l in years %}<option value="{{ v }}" {% if g.year|stringformat:"s" == v|stringformat:"s" %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="semester"><option value="">Any sem</option>
+    {% for v, l in semesters %}<option value="{{ v }}" {% if g.semester|stringformat:"s" == v|stringformat:"s" %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="kind"><option value="">Books &amp; notes</option>
+    {% for v, l in kinds %}<option value="{{ v }}" {% if g.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="offer"><option value="">Donate / lend / trade</option>
+    {% for v, l in offers %}<option value="{{ v }}" {% if g.offer == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <input name="course_code" placeholder="Course code" value="{{ g.course_code }}">
+  <input name="edition" placeholder="Edition" value="{{ g.edition }}">
+  <select name="condition"><option value="">Any condition</option>
+    {% for v, l in conditions %}<option value="{{ v }}" {% if g.condition == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="sort">
+    {% for v, l in sorts %}<option value="{{ v }}" {% if g.sort == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <button>Filter</button>
+</form>
+<div class="grid">
+{% for l in listings %}{% include "bookswap/_card.html" %}{% empty %}<p>No listings match.</p>{% endfor %}
+</div>
+{% if page.paginator.num_pages > 1 %}
+<div class="row">
+  {% if page.has_previous %}<a href="?{{ qs_str }}{% if qs_str %}&amp;{% endif %}page={{ page.previous_page_number }}">← Prev</a>{% endif %}
+  <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }} · {{ page.paginator.count }} items</span>
+  {% if page.has_next %}<a href="?{{ qs_str }}{% if qs_str %}&amp;{% endif %}page={{ page.next_page_number }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

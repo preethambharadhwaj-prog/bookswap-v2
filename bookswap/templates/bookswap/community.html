@@ -1,0 +1,21 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<h2>Community</h2>
+<div class="grid">
+  <div class="card"><h2 style="margin:0">{{ stats.members }}</h2><span class="muted">students</span></div>
+  <div class="card"><h2 style="margin:0">{{ stats.listings }}</h2><span class="muted">items listed</span></div>
+  <div class="card"><h2 style="margin:0">{{ stats.done }}</h2><span class="muted">books passed on</span></div>
+  <div class="card"><h2 style="margin:0">{{ stats.wanted }}</h2><span class="muted">open requests</span></div>
+</div>
+<h3>Top contributors</h3>
+{% for d in donors %}
+  <div class="card">#{{ forloop.counter }} <a href="{% url 'profile' d.username %}"><b>{{ d.username }}</b></a>
+    · {{ d.n }} passed on
+    <span class="tag">{% if d.n >= 10 %}🏅 Campus Hero{% elif d.n >= 5 %}📗 Book Buddy{% else %}🌱 Starter{% endif %}</span></div>
+{% empty %}<p class="muted">Complete your first exchange to appear here.</p>{% endfor %}
+<h3>Best rated</h3>
+{% for r in rated %}
+  <div class="card"><a href="{% url 'profile' r.username %}"><b>{{ r.username }}</b></a> ★ {{ r.avg|floatformat:1 }} <span class="muted">({{ r.cnt }} ratings)</span></div>
+{% empty %}<p class="muted">No ratings yet.</p>{% endfor %}
+<p class="muted">Badges: 🌱 1+ exchange · 📗 5+ · 🏅 10+</p>
+{% endblock %}

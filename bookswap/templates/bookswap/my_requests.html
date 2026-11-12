@@ -1,0 +1,25 @@
+{% extends "bookswap/base.html" %}
+{% block content %}
+<h2>Incoming</h2>
+{% for r in incoming %}
+  <div class="card">{{ r.requester.username }} wants to {{ r.get_kind_display|lower }} <b>{{ r.listing.title }}</b>
+    {% if r.offered %}(offers {{ r.offered.title }}){% endif %} — {{ r.get_status_display }}<br>{{ r.message }}
+    <div class="row">
+    <a href="{% url 'request_chat' r.pk %}">💬 Chat</a>
+    {% if r.status == "pending" %}
+      <form method="post" action="{% url 'request_update' r.pk 'accept' %}">{% csrf_token %}<button>Accept</button></form>
+      <form method="post" action="{% url 'request_update' r.pk 'decline' %}">{% csrf_token %}<button class="ghost">Decline</button></form>
+    {% elif r.status == "accepted" %}
+      <form method="post" action="{% url 'request_update' r.pk 'done' %}">{% csrf_token %}<button>Mark completed</button></form>
+    {% elif r.status == "done" %}<a href="{% url 'rate' r.pk %}">Rate {{ r.requester.username }}</a>{% endif %}
+    </div>
+  </div>
+{% empty %}<p class="muted">None.</p>{% endfor %}
+
+<h2>Sent</h2>
+{% for r in outgoing %}
+  <div class="card">{{ r.listing.title }} ({{ r.get_kind_display }}) — {{ r.get_status_display }}
+    <div class="row"><a href="{% url 'request_chat' r.pk %}">💬 Chat with {{ r.owner.username }}</a>
+    {% if r.status == "done" %}<a href="{% url 'rate' r.pk %}">Rate {{ r.owner.username }}</a>{% endif %}</div></div>
+{% empty %}<p class="muted">None.</p>{% endfor %}
+{% endblock %}

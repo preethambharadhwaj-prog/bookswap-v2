@@ -1,0 +1,24 @@
+<div class="card">
+  <a href="{% url 'listing_detail' l.pk %}">
+    {% if l.has_photo %}<img class="thumb" src="{% url 'listing_image' l.pk %}" alt="" loading="lazy">
+    {% else %}<div class="thumb ph">{% if l.kind == 'notes' %}📝{% else %}📚{% endif %}</div>{% endif %}
+  </a>
+  <a href="{% url 'listing_detail' l.pk %}"><b>{{ l.title }}</b></a>{% if l.is_saved %} ★{% endif %}
+  <div class="tags">
+    <span class="tag">{{ l.course_code }}</span>
+    <span class="tag">{{ l.get_level_display }} Y{{ l.year }} S{{ l.semester }}</span>
+    <span class="tag">{{ l.get_offer_display }}</span>
+    <span class="tag">{{ l.get_condition_display }}</span>
+    {% if not l.is_available %}<span class="tag">Not available</span>{% endif %}
+  </div>
+  <div class="muted">by <a href="{% url 'profile' l.owner.username %}">{{ l.owner.username }}</a>
+    {% if l.owner.profile.avg_rating %}★ {{ l.owner.profile.avg_rating|floatformat:1 }}{% endif %}
+    {% for r in l.reacts %}{% if r.n %} · {{ r.char }} {{ r.n }}{% endif %}{% endfor %}</div>
+  {% if manage %}
+  <div class="row">
+    <a href="{% url 'listing_edit' l.pk %}">Edit</a>
+    <form method="post" action="{% url 'listing_toggle' l.pk %}">{% csrf_token %}<button class="ghost">{% if l.is_available %}Hide{% else %}Show{% endif %}</button></form>
+    <form method="post" action="{% url 'listing_delete' l.pk %}" onsubmit="return confirm('Delete this listing?')">{% csrf_token %}<button class="danger">Delete</button></form>
+  </div>
+  {% endif %}
+</div>

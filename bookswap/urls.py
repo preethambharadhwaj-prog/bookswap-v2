@@ -1,0 +1,33 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.listing_list, name="listing_list"),
+    path("listings/new/", views.listing_create, name="listing_create"),
+    path("listings/<int:pk>/", views.listing_detail, name="listing_detail"),
+    path("listings/<int:pk>/image/", views.listing_image, name="listing_image"),
+    path("listings/<int:pk>/edit/", views.listing_edit, name="listing_edit"),
+    path("listings/<int:pk>/delete/", views.listing_delete, name="listing_delete"),
+    path("listings/<int:pk>/toggle/", views.listing_toggle, name="listing_toggle"),
+    path("listings/<int:pk>/save/", views.listing_save, name="listing_save"),
+    path("listings/<int:pk>/react/<str:key>/", views.react, name="react"),
+    path("listings/<int:pk>/request/", views.request_create, name="request_create"),
+    path("listings/<int:pk>/comment/", views.comment_create, name="comment_create"),
+    path("comments/<int:pk>/delete/", views.comment_delete, name="comment_delete"),
+    path("listings/<int:pk>/report/", views.report, name="report"),
+    path("wanted/", views.wanted_list, name="wanted_list"),
+    path("wanted/new/", views.wanted_create, name="wanted_create"),
+    path("wanted/<int:pk>/offer/", views.wanted_offer, name="wanted_offer"),
+    path("wanted/<int:pk>/close/", views.wanted_close, name="wanted_close"),
+    path("notifications/", views.notifications, name="notifications"),
+    path("community/", views.community, name="community"),
+    path("mine/", views.my_listings, name="my_listings"),
+    path("saved/", views.saved_list, name="saved_list"),
+    path("requests/", views.my_requests, name="my_requests"),
+    path("requests/<int:pk>/chat/", views.request_chat, name="request_chat"),
+    path("requests/<int:pk>/rate/", views.rate, name="rate"),
+    path("requests/<int:pk>/<str:action>/", views.request_update, name="request_update"),
+    path("u/<str:username>/", views.profile, name="profile"),
+    path("me/edit/", views.profile_edit, name="profile_edit"),
+    path("signup/", views.signup, name="signup"),
+]
