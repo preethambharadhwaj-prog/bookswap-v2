@@ -56,22 +56,23 @@
 <body>
 <div class="wrap">
 <nav>
-  <a class="brand" href="{% url 'listing_list' %}">📚 BookSwap</a>
+  <a class="brand" data-tour="brand" href="{% url 'listing_list' %}">📚 BookSwap</a>
   <a href="{% url 'listing_list' %}">Browse</a>
-  <a href="{% url 'wanted_list' %}">Wanted</a>
-  <a href="{% url 'community' %}">Community</a>
+  <a data-tour="wanted" href="{% url 'wanted_list' %}">Wanted</a>
+  <a data-tour="community" href="{% url 'community' %}">Community</a>
   {% if user.is_authenticated %}
     <a href="{% url 'listing_create' %}">+ List item</a>
-    <a href="{% url 'my_listings' %}">My items</a>
-    <a href="{% url 'notifications' %}">🔔{% if unread_count %} <span class="badge">{{ unread_count }}</span>{% endif %}</a>
-    <a href="{% url 'saved_list' %}">Saved</a>
-    <a href="{% url 'my_requests' %}">Requests</a>
+    <a data-tour="mine" href="{% url 'my_listings' %}">My items</a>
+    <a data-tour="bell" href="{% url 'notifications' %}">🔔{% if unread_count %} <span class="badge">{{ unread_count }}</span>{% endif %}</a>
+    <a data-tour="saved" href="{% url 'saved_list' %}">Saved</a>
+    <a data-tour="requests" href="{% url 'my_requests' %}">Requests</a>
     <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
     <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button>Logout</button></form>
   {% else %}
-    <a href="{% url 'login' %}">Login</a> <a href="{% url 'signup' %}">Sign up</a>
+    <span data-tour="auth"><a href="{% url 'login' %}">Login</a> <a href="{% url 'signup' %}">Sign up</a></span>
   {% endif %}
-  <button id="theme" type="button" aria-label="Toggle dark mode">◐</button>
+  <button id="tour-btn" type="button" aria-label="Take the website tour">❓ Tour</button>
+  <button id="theme" data-tour="theme" type="button" aria-label="Toggle dark mode">◐</button>
 </nav>
 <main>
 {% for m in messages %}<div class="card msg">{{ m }}</div>{% endfor %}
@@ -83,5 +84,6 @@ document.getElementById("theme").onclick=function(){
   var d=document.documentElement,dark=d.dataset.theme?d.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;
   d.dataset.theme=dark?"light":"dark";try{localStorage.setItem("theme",d.dataset.theme)}catch(e){}};
 </script>
+{% include "bookswap/_tour.html" %}
 </body>
 </html>

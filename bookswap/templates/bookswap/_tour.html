@@ -1,0 +1,118 @@
+<style>
+.tour-shield{position:fixed;inset:0;z-index:9998}
+.tour-hl{position:fixed;z-index:9999;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.6);pointer-events:none;transition:all .25s}
+.tour-tip{position:fixed;z-index:10000;width:min(340px,calc(100vw - 24px));background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:1rem;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.tour-tip h4{margin:0 0 .3rem;font-size:1.05rem}
+.tour-tip p{margin:0 0 .8rem}
+.tour-actions{display:flex;gap:.5rem;align-items:center}
+.tour-actions .sp{margin-left:auto}
+@media (max-width:600px){.tour-tip{left:12px!important;right:12px;bottom:12px;top:auto!important;width:auto}}
+@media (prefers-reduced-motion:reduce){.tour-hl{transition:none}}
+</style>
+<script>
+(function () {
+  var IN = " (Log in to see this in the menu.)", HOME = " (Open the home page to see this.)";
+  var STEPS = [
+    {s: '[data-tour="brand"]', t: "Welcome to BookSwap 👋", d: "Seniors and alumni pass textbooks and notes down to the year below. This short tour shows you around."},
+    {s: '[data-tour="filters"]', t: "Find your books", d: "Filter by level, department, year, semester, course code and more. Your own year is picked for you.", m: HOME},
+    {s: '[data-tour="donate"]', t: "Passing out or moving up?", d: "List your old books and notes here. Donating helps the next batch and earns you badges.", m: HOME},
+    {s: '[data-tour="card"]', t: "Listings", d: "Each card shows a photo, the course, whether it is free, lent or traded, and how others reacted. Tap one to open it.", m: HOME},
+    {s: '[data-tour="wanted"]', t: "Wanted board", d: "Can’t find a book? Post it here. You’ll be notified when a matching listing appears."},
+    {s: '[data-tour="community"]', t: "Community", d: "See how many books have been passed on, and who the top contributors are."},
+    {s: '[data-tour="auth"]', t: "Join in", d: "Sign up to request items, react, comment, save listings and chat with owners.", opt: true},
+    {s: '[data-tour="mine"]', t: "My items", d: "Edit, hide or delete your own listings.", m: IN},
+    {s: '[data-tour="saved"]', t: "Saved", d: "Listings you starred, kept in one place.", m: IN},
+    {s: '[data-tour="requests"]', t: "Requests and chat", d: "Accept or decline requests, chat to agree a pickup spot, then mark the exchange complete and rate each other.", m: IN},
+    {s: '[data-tour="bell"]', t: "Notifications", d: "A number appears here for new requests, comments, messages and ratings.", m: IN},
+    {s: '[data-tour="theme"]', t: "Light or dark", d: "Switch the look to suit your eyes. We remember your choice."},
+    {s: null, t: "You’re all set 🎉", d: "Press ❓ Tour in the menu any time to see this again."}
+  ];
+  var steps = [], i = 0, shield, hl, tip, h, p, count, back, next;
+
+  function seen() { try { return localStorage.getItem("tourSeen") === "1"; } catch (e) { return false; } }
+  function mark() { try { localStorage.setItem("tourSeen", "1"); } catch (e) {} }
+  function ok(sel) {
+    var el = document.querySelector(sel);
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+  function el(tag, cls) { var n = document.createElement(tag); if (cls) n.className = cls; return n; }
+
+  function place(target) {
+    if (!target) {
+      hl.style.cssText = "left:50%;top:40%;width:0;height:0";
+      tip.style.left = Math.max(12, (innerWidth - tip.offsetWidth) / 2) + "px";
+      tip.style.top = Math.max(12, innerHeight / 2 - tip.offsetHeight / 2) + "px";
+      return;
+    }
+    var r = target.getBoundingClientRect();
+    hl.style.left = r.left - 6 + "px"; hl.style.top = r.top - 6 + "px";
+    hl.style.width = r.width + 12 + "px"; hl.style.height = r.height + 12 + "px";
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var top = r.bottom + 16;
+    if (top + th > innerHeight - 12) top = Math.max(12, r.top - th - 16);
+    tip.style.top = top + "px";
+    tip.style.left = Math.min(Math.max(12, r.left), innerWidth - tw - 12) + "px";
+  }
+
+  function show(n) {
+    i = n;
+    var st = steps[i], target = st.s ? document.querySelector(st.s) : null;
+    h.textContent = st.t; p.textContent = st.d;
+    count.textContent = (i + 1) + " / " + steps.length;
+    back.style.visibility = i ? "visible" : "hidden";
+    next.textContent = i === steps.length - 1 ? "Finish" : "Next";
+    if (target) target.scrollIntoView({block: "center"});
+    place(target);
+    next.focus({preventScroll: true});
+  }
+
+  function end() {
+    mark();
+    [shield, hl, tip].forEach(function (n) { if (n && n.parentNode) n.parentNode.removeChild(n); });
+    removeEventListener("keydown", onKey); removeEventListener("resize", onResize);
+    shield = null;
+  }
+  function onKey(e) {
+    if (e.key === "Escape") end();
+    else if (e.key === "ArrowRight") go(1);
+    else if (e.key === "ArrowLeft") go(-1);
+  }
+  function onResize() { if (shield) show(i); }
+  function go(d) {
+    var n = i + d;
+    if (n >= steps.length) return end();
+    if (n >= 0) show(n);
+  }
+
+  function start() {
+    if (shield) return;
+    steps = [];
+    STEPS.forEach(function (st) {
+      if (!st.s || ok(st.s)) { steps.push(st); return; }
+      if (st.opt) return;  // e.g. the sign-up step is skipped when you are logged in
+      steps.push({s: null, t: st.t, d: st.d + (st.m || "")});  // keep the step, shown as a plain card
+    });
+    shield = el("div", "tour-shield"); hl = el("div", "tour-hl"); tip = el("div", "tour-tip");
+    tip.setAttribute("role", "dialog"); tip.setAttribute("aria-live", "polite");
+    h = el("h4"); p = el("p");
+    var actions = el("div", "tour-actions");
+    count = el("small", "muted");
+    back = el("button", "ghost"); back.type = "button"; back.textContent = "Back";
+    next = el("button"); next.type = "button";
+    var skip = el("button", "ghost sp"); skip.type = "button"; skip.textContent = "Skip";
+    back.onclick = function () { go(-1); }; next.onclick = function () { go(1); }; skip.onclick = end;
+    actions.appendChild(count); actions.appendChild(back); actions.appendChild(next); actions.appendChild(skip);
+    tip.appendChild(h); tip.appendChild(p); tip.appendChild(actions);
+    document.body.appendChild(shield); document.body.appendChild(hl); document.body.appendChild(tip);
+    addEventListener("keydown", onKey); addEventListener("resize", onResize);
+    show(0);
+  }
+
+  var btn = document.getElementById("tour-btn");
+  if (btn) btn.onclick = start;
+  window.startTour = start;
+  if (location.search.indexOf("tour=1") > -1 || (!seen() && location.pathname === "/")) setTimeout(start, 700);
+})();
+</script>
